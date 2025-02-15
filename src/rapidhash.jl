@@ -147,7 +147,7 @@ end
 rapidhash(data::Char, seed::UInt64, secret::NTuple{3, UInt64}) =
     rapidhash(UInt(Base.bitcast(UInt32, data)), seed, secret)
 rapidhash(data::String, seed::UInt64, secret::NTuple{3, UInt64}) =
-    GC.@preserve s rapidhash(pointer(data), sizeof(data), seed, secret)
+    GC.@preserve data rapidhash(pointer(data), sizeof(data), seed, secret)
 
 
 rapidhash(w::WeakRef, seed::UInt64, secret::NTuple{3, UInt64}) = rapid(w.value, seed, secret)
