@@ -30,8 +30,6 @@ function rapidhash(
     buflen = UInt64(n)
 
     secret1, secret2, secret3 = secret
-
-    # Mix seed first
     seed = seed ⊻ (rapid_mix(seed ⊻ secret1, secret2) ⊻ buflen)
 
     a = zero(UInt64)
@@ -112,10 +110,9 @@ function rapidhash(data::UInt32, seed::UInt64, secret::NTuple{3, UInt64})
     seed = seed ⊻ (rapid_mix(seed ⊻ secret[1], secret[2]) ⊻ 4)
 
     a = (UInt64(bswap(data)) << 32) | UInt64(bswap(data))
-    b = a
 
+    b = a ⊻ seed
     a = a ⊻ secret[2]
-    b = b ⊻ seed
     a, b = a * b, mul_hi(a, b)
     return rapid_mix(a ⊻ secret[1] ⊻ 4, b ⊻ secret[2])
 end
@@ -134,14 +131,13 @@ end
 
 
 function rapidhash(data::UInt8, seed::UInt64, secret::NTuple{3, UInt64})
-    buflen = 1
     secret1, secret2, _ = secret
-    seed = seed ⊻ (rapid_mix(seed ⊻ secret1, secret2) ⊻ buflen)
+    seed = seed ⊻ (rapid_mix(seed ⊻ secret1, secret2) ⊻ 1)
     u64data = UInt64(data)
     a = (u64data << 56) | (u64data << 32) | u64data
     a = a ⊻ secret2
     a, b = a * seed, mul_hi(a, seed)
-    return rapid_mix(a ⊻ secret1 ⊻ buflen, b ⊻ secret2)
+    return rapid_mix(a ⊻ secret1 ⊻ 1, b ⊻ secret2)
 end
 
 function rapidhash(data::T, seed::UInt64, secret::NTuple{3, UInt64}) where {T <: Union{Int8, Int16, Int32, Int64}}
